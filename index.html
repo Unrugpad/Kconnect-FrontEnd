@@ -3,7 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kreative Connect</title>
+  <title>Kreative Connect — Jobs, Events & Opportunities in Nigeria</title>
+  <meta name="description" content="Find verified jobs, events, and opportunities across Nigeria — all in one place. Discover scholarships, internships, remote roles, and more on Kreative Connect." />
+
+  <!-- Open Graph / WhatsApp / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Kreative Connect — Jobs, Events & Opportunities in Nigeria" />
+  <meta property="og:description" content="Find verified jobs, events, and opportunities across Nigeria — all in one place. Discover scholarships, internships, remote roles, and more on Kreative Connect." />
+  <meta property="og:image" content="https://i.ibb.co/ccmtBCHG/d44ff79a0f5f.jpg" />
+  <meta property="og:url" content="https://front-end.vercel.app" />
+  <meta property="og:site_name" content="Kreative Connect" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Kreative Connect — Jobs, Events & Opportunities in Nigeria" />
+  <meta name="twitter:description" content="Find verified jobs, events, and opportunities across Nigeria — all in one place. Discover scholarships, internships, remote roles, and more on Kreative Connect." />
+  <meta name="twitter:image" content="https://i.ibb.co/ccmtBCHG/d44ff79a0f5f.jpg" />
+
+  <link rel="icon" type="image/jpeg" href="https://i.ibb.co/ccmtBCHG/d44ff79a0f5f.jpg" />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -45,6 +62,31 @@
     .nav-links { display: flex; gap: 28px; list-style: none; }
     .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: color .2s; }
     .nav-links a:hover, .nav-links a.active { color: var(--black); font-weight: 600; }
+
+    /* ── NAVBAR CONTACT DROPDOWN ── */
+    .contact-wrap { position: relative; }
+    .contact-btn {
+      background: var(--bg2); border: 1.5px solid var(--border); color: var(--text);
+      padding: 8px 16px; border-radius: 999px; font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; font-family: 'Inter', sans-serif; transition: border-color .2s, background .2s;
+    }
+    .contact-btn:hover { border-color: var(--ydark); background: var(--ybg); }
+    .contact-dropdown {
+      position: absolute; top: calc(100% + 10px); right: 0;
+      background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.12);
+      min-width: 240px; padding: 8px; z-index: 250;
+      opacity: 0; pointer-events: none; transform: translateY(-6px);
+      transition: opacity .18s ease, transform .18s ease;
+    }
+    .contact-dropdown.open { opacity: 1; pointer-events: all; transform: translateY(0); }
+    .contact-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 500;
+      color: var(--text); text-decoration: none; transition: background .15s;
+    }
+    .contact-item:hover { background: var(--bg2); }
+    .contact-item-icon { font-size: 1rem; flex-shrink: 0; }
 
     /* ── AD BANNER ── */
     #ad-banner { background: var(--ybg); border-bottom: 1px solid #ede9b0; padding: 12px 24px; display: flex; align-items: center; gap: 12px; min-height: 52px; }
@@ -232,6 +274,22 @@
     .app-success h3 { font-family:'Space Grotesk',sans-serif; font-size: 1.2rem; color: var(--black); margin-bottom: 8px; }
     .app-success p { font-size: 0.88rem; color: var(--muted); }
 
+    /* ── FOOTER ── */
+    .site-footer { background: var(--bg); border-top: 1px solid var(--border); padding: 40px 24px 28px; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px; }
+    .footer-logo { font-family:'Space Grotesk',sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--black); }
+    .footer-logo em { font-style: normal; color: var(--ydark); }
+    .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+    .footer-link {
+      display: flex; align-items: center; gap: 7px;
+      background: var(--bg2); border: 1.5px solid var(--border); color: var(--text);
+      padding: 9px 16px; border-radius: 999px; font-size: 0.84rem; font-weight: 600;
+      text-decoration: none; transition: border-color .2s, background .2s;
+    }
+    .footer-link:hover { border-color: var(--ydark); background: var(--ybg); }
+    .footer-link-icon { font-size: 0.95rem; }
+    .footer-bottom { font-size: 0.76rem; color: #bbb; margin-top: 4px; }
+
     /* ── TOAST ── */
     #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--black); color: #fff; padding: 11px 18px; border-radius: 10px; font-size: 0.83rem; z-index: 999; transition: transform .3s ease; white-space: nowrap; }
     #toast.show { transform: translateX(-50%) translateY(0); }
@@ -240,6 +298,8 @@
     @media (max-width: 640px) {
       nav { padding: 13px 16px; }
       .nav-links { display: none; }
+      .contact-btn { padding: 7px 12px; font-size: 0.78rem; }
+      .contact-dropdown { min-width: 220px; right: -8px; }
       .hero { padding: 36px 16px 28px; }
       .tabs-bar { padding: 20px 16px 0; }
       .filter-row { padding: 14px 16px 0; }
@@ -249,6 +309,8 @@
       .modal { max-height: 88vh; border-radius: 16px 16px 0 0; }
       .detail-overlay { padding: 0; align-items: flex-end; }
       .detail-modal { border-radius: 16px 16px 0 0; max-height: 92vh; }
+      .site-footer { padding: 32px 16px 24px; }
+      .footer-link { font-size: 0.8rem; padding: 8px 14px; }
     }
   </style>
 </head>
@@ -262,6 +324,20 @@
     <li><a href="#" onclick="switchTab('events',this);return false">Events</a></li>
     <li><a href="#" onclick="switchTab('opps',this);return false">Springboard</a></li>
   </ul>
+  <div class="contact-wrap">
+    <button class="contact-btn" onclick="toggleContactMenu(event)">📞 Contact</button>
+    <div class="contact-dropdown" id="contact-dropdown">
+      <a href="https://whatsapp.com/channel/0029Vb8RoIW59PwSHKP93x1h" target="_blank" rel="noopener" class="contact-item">
+        <span class="contact-item-icon">📢</span> Follow us on WhatsApp
+      </a>
+      <a href="https://wa.me/2348082326776" target="_blank" rel="noopener" class="contact-item">
+        <span class="contact-item-icon">💬</span> Contact Us on WhatsApp
+      </a>
+      <a href="mailto:brandkreative.y@gmail.com" class="contact-item">
+        <span class="contact-item-icon">✉️</span> brandkreative.y@gmail.com
+      </a>
+    </div>
+  </div>
 </nav>
 
 <!-- AD BANNER -->
@@ -301,6 +377,25 @@
   <div class="results-sub" id="results-sub"></div>
   <div class="grid" id="grid"></div>
 </div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-logo">Kreative <em>Connect</em></div>
+    <div class="footer-links">
+      <a href="https://whatsapp.com/channel/0029Vb8RoIW59PwSHKP93x1h" target="_blank" rel="noopener" class="footer-link">
+        <span class="footer-link-icon">📢</span> Follow us on WhatsApp
+      </a>
+      <a href="https://wa.me/2348082326776" target="_blank" rel="noopener" class="footer-link">
+        <span class="footer-link-icon">💬</span> Contact Us on WhatsApp
+      </a>
+      <a href="mailto:brandkreative.y@gmail.com" class="footer-link">
+        <span class="footer-link-icon">✉️</span> brandkreative.y@gmail.com
+      </a>
+    </div>
+    <div class="footer-bottom">© 2026 Kreative Connect — by Brand Kreative Agency. All rights reserved.</div>
+  </div>
+</footer>
 
 <!-- LOCATION MODAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
@@ -378,6 +473,18 @@
     renderFilterRow();
     loadData();
     loadAd();
+  });
+
+  function toggleContactMenu(e) {
+    e.stopPropagation();
+    document.getElementById('contact-dropdown').classList.toggle('open');
+  }
+  document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('contact-dropdown');
+    const wrap = document.querySelector('.contact-wrap');
+    if (dropdown && dropdown.classList.contains('open') && !wrap.contains(e.target)) {
+      dropdown.classList.remove('open');
+    }
   });
 
   function switchTab(tab, el) {
