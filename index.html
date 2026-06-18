@@ -179,6 +179,16 @@
     .card-body { padding: 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
     .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
     .card-icon { width: 38px; height: 38px; border-radius: 8px; background: var(--ybg); border: 1px solid #ede9b0; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+    .card-top-right { display: flex; align-items: center; gap: 8px; }
+    .share-btn {
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+      background: var(--bg2); border: 1px solid var(--border); color: var(--muted);
+      display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
+      cursor: pointer; transition: background .15s, border-color .15s, transform .1s;
+    }
+    .share-btn:hover { background: #e6f9ee; border-color: #25D366; color: #1ea952; }
+    .share-btn:active { transform: scale(0.92); }
+    .share-btn-detail { width: 38px; height: 38px; font-size: 1.05rem; }
     .card-badge { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.5px; padding: 4px 10px; border-radius: 999px; text-transform: uppercase; }
     .badge-remote { background:#fffbe6; color:#b8860b; border:1px solid #f0d060; }
     .badge-onsite { background:#f5f5f5; color:#555; border:1px solid #e0e0e0; }
@@ -739,7 +749,10 @@
         <div class="card-body">
           <div class="card-top">
             <div class="card-icon">${icon}</div>
-            <span class="card-badge ${badge.cls}">${esc(badge.text)}</span>
+            <div class="card-top-right">
+              <span class="card-badge ${badge.cls}">${esc(badge.text)}</span>
+              <button class="share-btn" onclick="event.preventDefault();event.stopPropagation();shareListing('${esc(item.title).replace(/'/g,"\\'")}','${listingHref}')" title="Share">📤</button>
+            </div>
           </div>
           <div class="card-title">${esc(item.title)}</div>
           ${sub ? `<div class="card-sub">${esc(sub)}</div>` : ''}
@@ -797,9 +810,16 @@
     const imageHtml = hasImage ? `<div class="detail-image-wrap"><img class="detail-image" src="${item.image_url}" alt="${esc(item.title)}" /></div>` : '';
     const closeClass = hasImage ? 'detail-close on-image' : 'detail-close';
 
+    const listingTypeForUrl = { jobs: 'job', events: 'event', opps: 'opportunity' }[currentTab];
+    const detailListingHref = item.slug ? `${API}/listing/${listingTypeForUrl}/${item.slug}` : window.location.href;
+    const shareBtnStyle = hasImage
+      ? `position:absolute; top:12px; right:58px; z-index:5;`
+      : `position:absolute; top:16px; right:58px; z-index:5;`;
+
     modal.innerHTML = `
       ${imageHtml}
       <button class="${closeClass}" onclick="closeDetail()">✕</button>
+      <button class="share-btn share-btn-detail" style="${shareBtnStyle}${hasImage ? 'background:rgba(255,255,255,0.9);' : ''}" onclick="shareListing('${esc(item.title).replace(/'/g,"\\'")}','${detailListingHref}')" title="Share">📤</button>
       <div class="detail-header">
         ${!hasImage ? `<div class="detail-icon">${icon}</div>` : ''}
         <div class="detail-title">${esc(item.title)}</div>
@@ -946,6 +966,18 @@
     t.textContent = msg;
     t.classList.add('show');
     setTimeout(()=>t.classList.remove('show'), 3000);
+  }
+
+  function shareListing(title, url) {
+    const text = `${title} — via Kreative Connect`;
+    if (navigator.share) {
+      // Native share sheet (lets the person pick WhatsApp, or anything else they prefer)
+      navigator.share({ title, text, url }).catch(() => {});
+    } else {
+      // Fallback for browsers without native share support: open WhatsApp directly
+      const waText = encodeURIComponent(`${text}\n${url}`);
+      window.open(`https://wa.me/?text=${waText}`, '_blank');
+    }
   }
 </script>
 </body>
