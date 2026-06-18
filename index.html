@@ -613,10 +613,10 @@
 
     const action = applyAction(item, currentTab);
     let actionHtml = '';
-    if (action && action.type === 'form') {
+    if (action) {
+      // Both form and link types: tapping the card button just opens the detail page.
+      // The actual external link or application form only fires from inside the detail view.
       actionHtml = `<button class="card-action" onclick="event.stopPropagation();openDetail(${idx})">${esc(action.label)}</button>`;
-    } else if (action && action.type === 'link') {
-      actionHtml = `<button class="card-action" onclick="event.stopPropagation();window.open('${action.link}','_blank')">${esc(action.label)}</button>`;
     }
 
     const imageHtml = item.image_url
