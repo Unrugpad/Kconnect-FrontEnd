@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/listing/:path*",
+      "destination": "https://kconnect-backend-production.up.railway.app/listing/:path*"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://kconnect-backend-production.up.railway.app/sitemap.xml"
+    }
+  ]
+}
