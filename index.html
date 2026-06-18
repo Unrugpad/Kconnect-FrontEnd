@@ -172,7 +172,7 @@
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 14px; }
 
     /* ── CARD ── */
-    .card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; transition: box-shadow .2s, transform .15s; cursor: pointer; }
+    .card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; transition: box-shadow .2s, transform .15s; cursor: pointer; text-decoration: none; color: inherit; }
     .card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
     .card-image-wrap { width: 100%; aspect-ratio: 1 / 1; background: #fafafa; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .card-image { width: 100%; height: 100%; object-fit: contain; display: block; }
@@ -730,8 +730,11 @@
       ? `<div class="card-image-wrap"><img class="card-image" src="${item.image_url}" alt="${esc(item.title)}" loading="lazy" /></div>`
       : '';
 
+    const listingTypeForUrl = { jobs: 'job', events: 'event', opps: 'opportunity' }[currentTab];
+    const listingHref = item.slug ? `${API}/listing/${listingTypeForUrl}/${item.slug}` : '#';
+
     return `
-      <div class="card" onclick="openDetail(${idx})">
+      <a class="card" href="${listingHref}" onclick="event.preventDefault();openDetail(${idx})">
         ${imageHtml}
         <div class="card-body">
           <div class="card-top">
@@ -747,7 +750,7 @@
             ${actionHtml}
           </div>
         </div>
-      </div>`;
+      </a>`;
   }
 
   // ── DETAIL MODAL ──
