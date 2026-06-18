@@ -584,11 +584,10 @@
   function applyAction(item, tab) {
     const mode = item.apply_mode;
     if (mode === 'email') {
-      const label = tab === 'events' ? 'Register' : 'Apply';
-      return { type: 'form', label };
+      return { type: 'form', label: 'Apply Now' };
     }
     if (mode === 'link' && item.apply_link) {
-      const label = tab === 'events' ? 'Register' : 'Apply';
+      const label = item.apply_cta_label || 'Visit Link';
       return { type: 'link', label, link: item.apply_link };
     }
     return null;
@@ -615,9 +614,9 @@
     const action = applyAction(item, currentTab);
     let actionHtml = '';
     if (action && action.type === 'form') {
-      actionHtml = `<button class="card-action" onclick="event.stopPropagation();openDetail(${idx})">${action.label} Now</button>`;
+      actionHtml = `<button class="card-action" onclick="event.stopPropagation();openDetail(${idx})">${esc(action.label)}</button>`;
     } else if (action && action.type === 'link') {
-      actionHtml = `<button class="card-action" onclick="event.stopPropagation();window.open('${action.link}','_blank')">${action.label}</button>`;
+      actionHtml = `<button class="card-action" onclick="event.stopPropagation();window.open('${action.link}','_blank')">${esc(action.label)}</button>`;
     }
 
     const imageHtml = item.image_url
@@ -679,9 +678,9 @@
     const action = applyAction(item, currentTab);
     let ctaHtml = '';
     if (action && action.type === 'form') {
-      ctaHtml = `<button class="detail-cta" onclick="showApplyForm('${currentTab}', ${item.id})">${action.label} Now</button>`;
+      ctaHtml = `<button class="detail-cta" onclick="showApplyForm('${currentTab}', ${item.id})">${esc(action.label)}</button>`;
     } else if (action && action.type === 'link') {
-      ctaHtml = `<a class="detail-cta" href="${action.link}" target="_blank" rel="noopener">${action.label} →</a>`;
+      ctaHtml = `<a class="detail-cta" href="${action.link}" target="_blank" rel="noopener">${esc(action.label)} →</a>`;
     }
 
     const hasImage = !!item.image_url;
@@ -762,10 +761,17 @@
     if (cvFile && cvFile.size === 0) fd.delete('cv');
 
     const endpoint = APPLY_ENDPOINTS[tab];
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000); // generous, backend now responds instantly anyway
 
     try {
-      const res = await fetch(`${API}/${endpoint}/${listingId}/apply`, { method: 'POST', body: fd });
-      if (!res.ok) throw new Error();
+      const res = await fetch(`${API}/${endpoint}/${listingId}/apply`, { method: 'POST', body: fd, signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (!res.ok) {
+        let detail = '';
+        try { const j = await res.json(); detail = j.detail || ''; } catch(e) {}
+        throw new Error(detail || `Server responded with ${res.status}`);
+      }
       document.getElementById('detail-modal').innerHTML = `
         <button class="detail-close" onclick="closeDetail()">✕</button>
         <div class="app-success">
@@ -774,9 +780,14 @@
           <p>We've received your details. Good luck!</p>
         </div>`;
     } catch (err) {
+      clearTimeout(timeoutId);
       form.classList.remove('app-submitting');
       btn.textContent = 'Submit';
-      showToast('Something went wrong — please try again.');
+      if (err.name === 'AbortError') {
+        showToast('Taking longer than expected — please check your connection and try again.');
+      } else {
+        showToast('Something went wrong — please try again.');
+      }
     }
   }
 
