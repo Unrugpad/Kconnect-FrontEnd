@@ -40,7 +40,7 @@
       backdrop-filter: blur(12px);
       z-index: 200;
     }
-    .nav-logo { font-family:'Space Grotesk',sans-serif; font-size:1.3rem; font-weight:700; color:var(--black); letter-spacing:-0.5px; }
+    .nav-logo { font-family:'Space Grotesk',sans-serif; font-size:1.3rem; font-weight:700; color:var(--black); letter-spacing:-0.5px; display: flex; align-items: center; gap: 8px; }
     .nav-logo em { font-style: normal; color: var(--ydark); }
     .nav-links { display: flex; gap: 28px; list-style: none; }
     .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: color .2s; }
@@ -132,7 +132,8 @@
     /* ── CARD ── */
     .card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; transition: box-shadow .2s, transform .15s; cursor: pointer; }
     .card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
-    .card-image { width: 100%; height: 150px; object-fit: cover; display: block; background: var(--bg2); }
+    .card-image-wrap { width: 100%; aspect-ratio: 1 / 1; background: #fafafa; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .card-image { width: 100%; height: 100%; object-fit: contain; display: block; }
     .card-body { padding: 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
     .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
     .card-icon { width: 38px; height: 38px; border-radius: 8px; background: var(--ybg); border: 1px solid #ede9b0; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
@@ -177,7 +178,8 @@
     .detail-overlay.open { opacity: 1; pointer-events: all; }
     .detail-modal { background: var(--bg); border-radius: 16px; width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto; transform: scale(0.96); transition: transform .25s ease; }
     .detail-overlay.open .detail-modal { transform: scale(1); }
-    .detail-image { width: 100%; height: 220px; object-fit: cover; display: block; border-radius: 16px 16px 0 0; }
+    .detail-image-wrap { width: 100%; aspect-ratio: 1 / 1; background: #fafafa; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 16px 16px 0 0; }
+    .detail-image { width: 100%; height: 100%; object-fit: contain; display: block; }
     .detail-header { padding: 24px 24px 0; position: relative; }
     .detail-close { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.9); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1rem; color: var(--muted); z-index: 5; }
     .detail-close.on-image { top: 12px; right: 12px; }
@@ -578,6 +580,20 @@
     return {cls:'badge-onsite', text:'On-site'};
   }
 
+  // Determine the action button label/behavior based on unified apply_mode
+  function applyAction(item, tab) {
+    const mode = item.apply_mode;
+    if (mode === 'email') {
+      const label = tab === 'events' ? 'Register' : 'Apply';
+      return { type: 'form', label };
+    }
+    if (mode === 'link' && item.apply_link) {
+      const label = tab === 'events' ? 'Register' : 'Apply';
+      return { type: 'link', label, link: item.apply_link };
+    }
+    return null;
+  }
+
   function renderCard(item, idx) {
     const icon = { jobs:'💼', events:'🎯', opps:'🚀' }[currentTab];
     let badge;
@@ -596,17 +612,17 @@
                : item.deadline ? `⏳ ${item.deadline}`
                : timeAgo(item.created_at);
 
-    let actionHtml;
-    if (currentTab === 'jobs') {
-      actionHtml = `<button class="card-action" onclick="event.stopPropagation();openDetail(${idx})">Apply Now</button>`;
-    } else {
-      const link = item.register_link || item.apply_link;
-      actionHtml = link
-        ? `<button class="card-action" onclick="event.stopPropagation();window.open('${link}','_blank')">${currentTab==='events'?'Register':'Apply'}</button>`
-        : '';
+    const action = applyAction(item, currentTab);
+    let actionHtml = '';
+    if (action && action.type === 'form') {
+      actionHtml = `<button class="card-action" onclick="event.stopPropagation();openDetail(${idx})">${action.label} Now</button>`;
+    } else if (action && action.type === 'link') {
+      actionHtml = `<button class="card-action" onclick="event.stopPropagation();window.open('${action.link}','_blank')">${action.label}</button>`;
     }
 
-    const imageHtml = item.image_url ? `<img class="card-image" src="${item.image_url}" alt="${esc(item.title)}" loading="lazy" />` : '';
+    const imageHtml = item.image_url
+      ? `<div class="card-image-wrap"><img class="card-image" src="${item.image_url}" alt="${esc(item.title)}" loading="lazy" /></div>`
+      : '';
 
     return `
       <div class="card" onclick="openDetail(${idx})">
@@ -660,19 +676,16 @@
         <ul>${criteria.map(c => `<li>${esc(c)}</li>`).join('')}</ul>
       </div>` : '';
 
+    const action = applyAction(item, currentTab);
     let ctaHtml = '';
-    if (currentTab === 'jobs') {
-      ctaHtml = `<button class="detail-cta" onclick="showApplyForm(${item.id})">Apply Now</button>`;
-    } else {
-      const link = item.register_link || item.apply_link;
-      if (link) {
-        const label = currentTab === 'events' ? 'Register' : 'Apply';
-        ctaHtml = `<a class="detail-cta" href="${link}" target="_blank" rel="noopener">${label} →</a>`;
-      }
+    if (action && action.type === 'form') {
+      ctaHtml = `<button class="detail-cta" onclick="showApplyForm('${currentTab}', ${item.id})">${action.label} Now</button>`;
+    } else if (action && action.type === 'link') {
+      ctaHtml = `<a class="detail-cta" href="${action.link}" target="_blank" rel="noopener">${action.label} →</a>`;
     }
 
     const hasImage = !!item.image_url;
-    const imageHtml = hasImage ? `<img class="detail-image" src="${item.image_url}" alt="${esc(item.title)}" />` : '';
+    const imageHtml = hasImage ? `<div class="detail-image-wrap"><img class="detail-image" src="${item.image_url}" alt="${esc(item.title)}" /></div>` : '';
     const closeClass = hasImage ? 'detail-close on-image' : 'detail-close';
 
     modal.innerHTML = `
@@ -696,17 +709,20 @@
   function closeDetail() { document.getElementById('detail-overlay').classList.remove('open'); }
   function handleDetailOverlayClick(e) { if (e.target === document.getElementById('detail-overlay')) closeDetail(); }
 
-  // ── APPLY FORM ──
-  function showApplyForm(jobId) {
+  // ── APPLY FORM (works for jobs, events, opportunities — same shape, different endpoint) ──
+  const APPLY_ENDPOINTS = { jobs: 'jobs', events: 'events', opps: 'opportunities' };
+
+  function showApplyForm(tab, listingId) {
     const modal = document.getElementById('detail-modal');
+    const verb = tab === 'events' ? 'Register' : 'Apply';
     modal.innerHTML = `
       <button class="detail-close" onclick="closeDetail()">✕</button>
       <div class="detail-header">
-        <div class="detail-title">Apply for this role</div>
+        <div class="detail-title">${verb} for this ${tab === 'events' ? 'event' : tab === 'opps' ? 'opportunity' : 'role'}</div>
         <div class="detail-sub">Your information goes directly to the right inbox — no spam, no sharing.</div>
       </div>
       <div class="detail-body">
-        <form class="app-form" id="apply-form" onsubmit="submitApplication(event, ${jobId})">
+        <form class="app-form" id="apply-form" onsubmit="submitApplication(event, '${tab}', ${listingId})">
           <div class="app-field">
             <label>Full Name</label>
             <input type="text" name="full_name" required placeholder="e.g. Adaeze Okafor" />
@@ -720,20 +736,20 @@
             <input type="email" name="email" required placeholder="e.g. you@email.com" />
           </div>
           <div class="app-field">
-            <label>Cover Note (optional)</label>
+            <label>${tab === 'jobs' ? 'Cover Note (optional)' : 'Note (optional)'}</label>
             <textarea name="cover_note" placeholder="A few lines about why you're a good fit…"></textarea>
           </div>
           <div class="app-field">
-            <label>Upload CV</label>
-            <input type="file" name="cv" accept=".pdf,.doc,.docx" required />
-            <div class="app-note">PDF or Word document, max 5MB</div>
+            <label>Upload CV (optional)</label>
+            <input type="file" name="cv" accept=".pdf,.doc,.docx" />
+            <div class="app-note">PDF or Word document, max 5MB — optional</div>
           </div>
-          <button type="submit" class="detail-cta" id="apply-submit-btn">Submit Application</button>
+          <button type="submit" class="detail-cta" id="apply-submit-btn">Submit ${verb === 'Register' ? 'Registration' : 'Application'}</button>
         </form>
       </div>`;
   }
 
-  async function submitApplication(e, jobId) {
+  async function submitApplication(e, tab, listingId) {
     e.preventDefault();
     const form = document.getElementById('apply-form');
     const btn = document.getElementById('apply-submit-btn');
@@ -741,19 +757,25 @@
     btn.textContent = 'Submitting…';
 
     const fd = new FormData(form);
+    // Remove empty file input so optional CV doesn't break the request
+    const cvFile = fd.get('cv');
+    if (cvFile && cvFile.size === 0) fd.delete('cv');
+
+    const endpoint = APPLY_ENDPOINTS[tab];
+
     try {
-      const res = await fetch(`${API}/jobs/${jobId}/apply`, { method: 'POST', body: fd });
+      const res = await fetch(`${API}/${endpoint}/${listingId}/apply`, { method: 'POST', body: fd });
       if (!res.ok) throw new Error();
       document.getElementById('detail-modal').innerHTML = `
         <button class="detail-close" onclick="closeDetail()">✕</button>
         <div class="app-success">
           <div class="icon">✅</div>
-          <h3>Application sent!</h3>
+          <h3>Sent!</h3>
           <p>We've received your details. Good luck!</p>
         </div>`;
     } catch (err) {
       form.classList.remove('app-submitting');
-      btn.textContent = 'Submit Application';
+      btn.textContent = 'Submit';
       showToast('Something went wrong — please try again.');
     }
   }
