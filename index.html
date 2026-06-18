@@ -429,6 +429,9 @@
 
 <script>
   const API = 'https://kconnect-backend-production.up.railway.app';
+  // Used specifically for share links and the card's clickable href, so people see the
+  // branded custom domain instead of the raw Railway backend URL. Update if the domain changes.
+  const PUBLIC_SITE = 'https://kreativeconnect.com.ng';
 
   const NIGERIA = {
     'Abia':['All Areas','Aba','Umuahia','Arochukwu','Ohafia','Isiala Ngwa','Osisioma','Obingwa'],
@@ -741,7 +744,7 @@
       : '';
 
     const listingTypeForUrl = { jobs: 'job', events: 'event', opps: 'opportunity' }[currentTab];
-    const listingHref = item.slug ? `${API}/listing/${listingTypeForUrl}/${item.slug}` : '#';
+    const listingHref = item.slug ? `${PUBLIC_SITE}/listing/${listingTypeForUrl}/${item.slug}` : '#';
 
     return `
       <a class="card" href="${listingHref}" onclick="event.preventDefault();openDetail(${idx})">
@@ -811,7 +814,7 @@
     const closeClass = hasImage ? 'detail-close on-image' : 'detail-close';
 
     const listingTypeForUrl = { jobs: 'job', events: 'event', opps: 'opportunity' }[currentTab];
-    const detailListingHref = item.slug ? `${API}/listing/${listingTypeForUrl}/${item.slug}` : window.location.href;
+    const detailListingHref = item.slug ? `${PUBLIC_SITE}/listing/${listingTypeForUrl}/${item.slug}` : window.location.href;
     const shareBtnStyle = hasImage
       ? `position:absolute; top:12px; right:58px; z-index:5;`
       : `position:absolute; top:16px; right:58px; z-index:5;`;
